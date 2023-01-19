@@ -1,0 +1,57 @@
+version: 2.1
+
+orbs:
+  terraform: circleci/terraform@3.2.0
+
+parameters:
+  terraform-plan-file:
+    type: string
+    default: 'circleci.tfplan'
+
+executors:
+  base:
+    docker:
+      - image: hashicorp/terraform:<< parameters.tag >>
+    parameters:
+      tag:
+        default: 1.3.7
+        description: Specify the Terraform Docker image tag for the executor
+        type: string
+
+jobs:
+  plan:
+    executor: base
+    steps:
+      - checkout
+      - run: terraform version
+      - run: terraform init
+      - run: terraform fmt
+      - run: terraform validate
+      - run: terraform plan -out=<< pipeline.parameters.terraform-plan-file >>
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - << pipeline.parameters.terraform-plan-file >>
+
+  apply:
+    executor: base
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/project
+      - run: terraform apply << pipeline.parameters.terraform-plan-file >>
+      - run: terraform show
+
+workflows:
+  main:
+    jobs:
+      - plan
+      - hold:
+          type: approval
+          requires:
+            - plan
+      - apply:
+          requires:
+            - hold
+
+# VS Code Extension Version: 1.5.1
