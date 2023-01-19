@@ -7,34 +7,34 @@ resource "pagerduty_team" "it" {
 }
 
 resource "pagerduty_user" "maurice_moss" {
-  name  = "Maurice Moss"
-  email = "mmoss@reynholm.industries"
+  name      = "Maurice Moss"
+  email     = "mmoss@reynholm.industries"
+  job_title = "IT technician"
 }
 
 resource "pagerduty_user" "roy_trenneman" {
-  name  = "Roy Trenneman"
-  email = "rtrenneman@reynholm.industries"
+  name      = "Roy Trenneman"
+  email     = "rtrenneman@reynholm.industries"
+  job_title = "IT technician"
 }
 
 resource "pagerduty_user" "jen_barber" {
-  name  = "Jen Barber"
-  email = "jbarber@reynholm.industries"
+  name      = "Jen Barber"
+  email     = "jbarber@reynholm.industries"
+  job_title = "IT manager"
 }
 
 resource "pagerduty_team_membership" "mmoss_it" {
   user_id = pagerduty_user.maurice_moss.id
   team_id = pagerduty_team.it.id
-  role    = "observer"
 }
 
 resource "pagerduty_team_membership" "rtenneman_it" {
   user_id = pagerduty_user.roy_trenneman.id
   team_id = pagerduty_team.it.id
-  role    = "observer"
 }
 
 resource "pagerduty_team_membership" "jbarber_it" {
   user_id = pagerduty_user.jen_barber.id
   team_id = pagerduty_team.it.id
-  role    = "manager"
 }
