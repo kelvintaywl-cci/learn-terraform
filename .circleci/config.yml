@@ -39,6 +39,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/project
+      - run: terraform init
       - run: terraform apply -auto-approve << pipeline.parameters.terraform-plan-file >>
       - run: terraform show
 
