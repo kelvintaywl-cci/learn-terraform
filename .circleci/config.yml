@@ -24,23 +24,24 @@ jobs:
     steps:
       - run:
           name: test trap
-          cleanup() {
-              rv=$?
-              if [ -eq $rv 2 ]; then
-                echo "last command exited 2; making this green!"
-                exit 0
-              else
-                exit $rv
-              fi
-          }
-
-          mock() {
-            echo "mock command...."
-            exit 2
-          }
-
-          trap cleanup EXIT
-          fake
+          command: |
+            cleanup() {
+                rv=$?
+                if [ -eq $rv 2 ]; then
+                  echo "last command exited 2; making this green!"
+                  exit 0
+                else
+                  exit $rv
+                fi
+            }
+  
+            mock() {
+              echo "mock command...."
+              exit 2
+            }
+  
+            trap cleanup EXIT
+            fake
       - run: echo "next step"        
   plan:
     executor: base
