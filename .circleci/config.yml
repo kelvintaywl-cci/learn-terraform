@@ -27,7 +27,7 @@ jobs:
           command: |
             cleanup() {
                 rv=$?
-                if [ -eq $rv 2 ]; then
+                if [ $rv -eq 2 ]; then
                   echo "last command exited 2; making this green!"
                   exit 0
                 else
