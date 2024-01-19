@@ -41,7 +41,7 @@ jobs:
             }
   
             trap cleanup EXIT
-            fake
+            mock
       - run: echo "next step"        
   plan:
     executor: base
