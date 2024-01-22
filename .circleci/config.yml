@@ -1,12 +1,40 @@
 version: 2.1
 
 orbs:
-  terraform: circleci/terraform@3.2.0
+  # my custom (mock) Terraform Orb inline
+  terraform:
+    description: mock inline Orb
+    commands:
+      lint:
+        description: mock lint
+        parameters:
+          test-exit-code:
+            type: integer
+            default: 2
+        steps:
+          - run:
+              name: Lint Terraform files
+              command: |
+                mark_as_success() {
+                  rv=$?
+                  # do not fail if last command exited 2
+                  if [ $rv -eq 2 ]; then
+                    echo "last command exited 2; marking this green!"
+                    exit 0
+                  else
+                    exit $rv
+                  fi
+                }
 
-parameters:
-  terraform-plan-file:
-    type: string
-    default: 'circleci.tfplan'
+                trap mark_as_success EXIT
+
+                tflint() {
+                  echo "mock TFlint.."
+                  exit << parameters.test-exit-code >>
+                }
+
+                # run TFlint...
+                tflint
 
 executors:
   base:
@@ -22,54 +50,23 @@ jobs:
   test:
     executor: base
     steps:
+      - terraform/lint
       - run:
-          name: test trap
-          command: |
-            cleanup() {
-                rv=$?
-                if [ $rv -eq 2 ]; then
-                  echo "last command exited 2; making this green!"
-                  exit 0
-                else
-                  exit $rv
-                fi
-            }
-  
-            mock() {
-              echo "mock command...."
-              exit 2
-            }
-  
-            trap cleanup EXIT
-            mock
-      - run: echo "next step"        
-  plan:
-    executor: base
-    steps:
-      - checkout
-      - run: terraform version
-      - run: terraform init
-      - run: terraform fmt
-      - run: terraform validate
-      - run: terraform plan -out=<< pipeline.parameters.terraform-plan-file >>
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - << pipeline.parameters.terraform-plan-file >>
-
-  apply:
-    executor: base
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
-      - run: terraform init
-      - run: terraform apply -auto-approve << pipeline.parameters.terraform-plan-file >>
-      - run: terraform show
+          name: Post-lint command
+          command: echo "next step!"     
 
 workflows:
   main:
     jobs:
-      - test
+      - test:
+          matrix:
+            parameters:
+              test-exit-code:
+                # should pass, with next step(s) continued
+                - 2
+                # should fail on terraform/lint step then
+                - 1
+                # should pass, with next step(s) continued
+                - 0
 
 # VS Code Extension Version: 1.5.1
