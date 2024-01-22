@@ -8,7 +8,7 @@ orbs:
       lint:
         description: mock lint
         parameters:
-          test-exit-code:
+          exit-code:
             type: integer
             default: 2
         steps:
@@ -30,7 +30,7 @@ orbs:
 
                 tflint() {
                   echo "mock TFlint.."
-                  exit << parameters.test-exit-code >>
+                  exit << parameters.exit-code >>
                 }
 
                 # run TFlint...
@@ -49,8 +49,12 @@ executors:
 jobs:
   test:
     executor: base
+    parameters:
+      tflint-exit-code:
+        type: integer
     steps:
-      - terraform/lint
+      - terraform/lint:
+          exit-code: << parameters.tflint-exit-code >>
       - run:
           name: Post-lint command
           command: echo "next step!"     
@@ -61,7 +65,7 @@ workflows:
       - test:
           matrix:
             parameters:
-              test-exit-code:
+              tflint-exit-code:
                 # should pass, with next step(s) continued
                 - 2
                 # should fail on terraform/lint step then
